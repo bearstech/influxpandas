@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from pyparsing import QuotedString, Word, nums, delimitedList, Optional, \
     Regex, Group, Suppress, ParseException
 
@@ -31,9 +33,20 @@ def readflux(reader):
                 dict((a[0], a[1]) for a in l['tags'])
 
 
+def orderByKey(flux):
+    box = defaultdict(list)
+    for line in flux:
+        box[line[0]].append(line)
+    return box
+
+
 if __name__ == '__main__':
 
     import sys
 
-    for line in readflux(open(sys.argv[1], 'r')):
-        print(line)
+    b = orderByKey(readflux(open(sys.argv[1], 'r')))
+    for k, v in b.items():
+        print()
+        print(k)
+        for vv in v:
+            print("\t", vv[1:])
