@@ -1,9 +1,11 @@
 from pyparsing import QuotedString, Word, nums, delimitedList, Optional, \
-    printables, Regex, Group, Suppress, ParseException
+    Regex, Group, Suppress, ParseException
 
 
-integer = Regex(r"(?P<integer>\d+)i")
-real = Regex(r"[+-]?\d+(\.\d+)?")
+integer = Regex(r"\d+i").setParseAction(lambda s, locs, toks:
+                                        int(toks[0][:-1]))
+real = Regex(r"[+-]?\d+(\.\d+)?")("real").setParseAction(lambda s, locs, toks:
+                                                         float(toks[0]))
 number = Word(nums)
 key = Regex(r"[a-zA-Z][a-zA-Z0-9_]*")
 quoted = QuotedString('"')
@@ -24,8 +26,9 @@ def readflux(reader):
             print(" " * p.col + "^")
             raise p
         else:
-            print(l[1].resultsName)
-            yield l
+            yield l['key'], int(l['ts']),\
+                dict((a[0], a[1]) for a in l['values']),\
+                dict((a[0], a[1]) for a in l['tags'])
 
 
 if __name__ == '__main__':
