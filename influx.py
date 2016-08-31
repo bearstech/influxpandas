@@ -19,6 +19,7 @@ LINE = key("key") + Optional(Suppress(",") + Group(delimitedList(Group(key +
     number("ts")
 
 
+# Read and parse influxdb lingua
 def readflux(reader):
     for line in reader:
         try:
@@ -40,13 +41,31 @@ def orderByKey(flux):
     return box
 
 
+def table(lines):
+    for k, ts, values, tags in lines:
+        values.update(dict(ts=ts))
+        values.update(tags)
+        yield values
+
+
+# Prepare data, for pandas' DataFrame
+def df(lines):
+    idx = []
+    v = []
+    for k, ts, values, tags in lines:
+        idx.append(ts)
+        values.update(tags)
+        v.append(values)
+    return idx, v
+
+
 if __name__ == '__main__':
 
     import sys
 
     b = orderByKey(readflux(open(sys.argv[1], 'r')))
-    for k, v in b.items():
+    for name, values in b.items():
         print()
-        print(k)
-        for vv in v:
-            print("\t", vv[1:])
+        print(name)
+        for v in table(values):
+            print("\t", v)
