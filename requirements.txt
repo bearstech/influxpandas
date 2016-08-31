@@ -1,0 +1,4 @@
+pyparsing
+pandas
+matplotlib
+jupyter
